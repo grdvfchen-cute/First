@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英文單字學習中心</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+        }
+
+        /* 遊戲區域的基本樣式 */
+        .game-container {
+            display: none; /* 預設隱藏 */
+        }
+        .game-container.active {
+            display: block; /* 點擊後顯示 */
+        }
+
+        /* 閃示卡樣式 */
+        .flashcard-container {
+            perspective: 1000px;
+        }
+        .flashcard {
+            width: 100%;
+            height: 250px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+        }
+        .flashcard-front {
+            background-color: white;
+            color: #1f2937; /* text-gray-800 */
+        }
+        .flashcard-back {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* 記憶遊戲卡牌樣式 */
+        .memory-card {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .memory-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .memory-card.is-flipped .memory-card-inner {
+            transform: rotateY(180deg);
+        }
+        .memory-card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-size: 0.875rem; /* text-sm */
+            padding: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow-md */
+        }
+        .memory-card-front {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+            font-size: 1.5rem; /* text-2xl */
+        }
+        .memory-card-back {
+            background-color: white;
+            color: #1f2937; /* text-gray-800 */
+            transform: rotateY(180deg);
+            /* 自動換行 */
+            word-break: break-word;
+            hyphens: auto;
+        }
+        .memory-card.is-matched {
+            opacity: 0.5;
+            cursor: default;
+        }
+        
+        /* 配對遊戲樣式 */
+        .matching-item {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .matching-item.selected {
+            background-color: #3b82f6; /* bg-blue-500 */
+            color: white;
+        }
+        .matching-item.matched {
+            background-color: #10b981; /* bg-green-500 */
+            color: white;
+            cursor: default;
+            text-decoration: line-through;
+        }
+        .matching-item.incorrect {
+            animation: shake 0.5s;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-3xl bg-white rounded-xl shadow-2xl p-6 md:p-10">
+        
+        <!-- 主標題 -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">英文單字學習中心</h1>
+            <p class="text-gray-600 mt-2">L3 & L4 綜合練習</p>
+        </header>
+
+        <!-- 導覽選單 -->
+        <nav id="main-menu" class="flex flex-wrap justify-center gap-3 md:gap-4 mb-8">
+            <button data-target="flashcards" class="menu-btn bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg transition shadow-md">
+                單字閃示卡
+            </button>
+            <button data-target="spelling" class="menu-btn bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-5 rounded-lg transition shadow-md">
+                拼字練習
+            </button>
+            <button data-target="matching" class="menu-btn bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-5 rounded-lg transition shadow-md">
+                配對練習
+            </button>
+            <button data-target="memory" class="menu-btn bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-5 rounded-lg transition shadow-md">
+                記憶遊戲
+            </button>
+        </nav>
+
+        <!-- 遊戲區域容器 -->
+        <div id="game-arena">
+
+            <!-- 1. 單字閃示卡 -->
+            <div id="flashcards" class="game-container">
+                <h2 class="text-2xl font-bold text-center mb-6 text-blue-700">單字閃示卡</h2>
+                <div class="flashcard-container mb-4">
+                    <div id="flashcard" class="flashcard">
+                        <div class="flashcard-face flashcard-front">
+                            <span id="flashcard-front-text" class="text-4xl font-bold p-4"></span>
+                        </div>
+                        <div class="flashcard-face flashcard-back">
+                            <span id="flashcard-back-text" class="text-2xl font-semibold p-4"></span>
+                        </div>
+                    </div>
+                </div>
+                <div id="flashcard-progress" class="text-center text-gray-500 mb-4"></div>
+                <div class="flex justify-center gap-4 flex-wrap">
+                    <button id="flashcard-prev" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-lg transition">&larr; 上一個</button>
+                    <button id="flashcard-flip" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition">翻面</button>
+                    <button id="flashcard-next" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition">下一個 &rarr;</button>
+                </div>
+                <div class="text-center mt-4">
+                     <button id="flashcard-shuffle" class="text-blue-500 hover:text-blue-700 text-sm">隨機排序</button>
+                </div>
+            </div>
+
+            <!-- 2. 拼字練習 -->
+            <div id="spelling" class="game-container">
+                <h2 class="text-2xl font-bold text-center mb-6 text-green-700">拼字練習</h2>
+                <div class="bg-gray-100 p-6 rounded-lg text-center mb-4">
+                    <p class="text-lg text-gray-600 mb-2">請拼出以下中文的英文：</p>
+                    <p id="spelling-prompt" class="text-2xl font-semibold text-gray-800"></p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                    <input type="text" id="spelling-input" class="flex-grow text-lg p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:ring-green-500 transition" placeholder="請在此輸入英文..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                    <button id="spelling-check" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition">送出</button>
+                </div>
+                <div id="spelling-feedback" class="text-center h-12"></div>
+                <div class="text-center mt-4">
+                    <button id="spelling-next" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg transition">下一個</button>
+                </div>
+            </div>
+
+            <!-- 3. 配對練習 -->
+            <div id="matching" class="game-container">
+                <h2 class="text-2xl font-bold text-center mb-6 text-purple-700">配對練習</h2>
+                <div id="matching-feedback" class="text-center h-8 mb-4 font-semibold"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 英文欄 -->
+                    <div class="flex flex-col gap-3">
+                        <h3 class="text-lg font-semibold text-center text-gray-700">英文</h3>
+                        <div id="matching-en" class="flex flex-col gap-2"></div>
+                    </div>
+                    <!-- 中文欄 -->
+                    <div class="flex flex-col gap-3">
+                        <h3 class="text-lg font-semibold text-center text-gray-700">中文</h3>
+                        <div id="matching-cn" class="flex flex-col gap-2"></div>
+                    </div>
+                </div>
+                <div class="text-center mt-6">
+                    <button id="matching-new" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-lg transition">新遊戲</button>
+                </div>
+            </div>
+            
+            <!-- 4. 記憶遊戲 -->
+            <div id="memory" class="game-container">
+                <h2 class="text-2xl font-bold text-center mb-6 text-yellow-700">記憶遊戲</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <span id="memory-moves" class="text-lg font-semibold text-gray-700">步數: 0</span>
+                    <button id="memory-new" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-lg transition">新遊戲</button>
+                </div>
+                <div id="memory-grid" class="grid grid-cols-4 gap-3 md:gap-4" style="aspect-ratio: 4 / 3;">
+                    <!-- 卡片將由 JS 動態生成 -->
+                </div>
+                <div id="memory-feedback" class="text-center h-8 mt-4 font-semibold text-xl text-green-600"></div>
+            </div>
+
+        </div> <!-- /#game-arena -->
+
+    </main>
+
+    <script>
+        // --- 1. 資料庫 (從圖片中擷取) ---
+        const vocabulary = [
+            // L3
+            { en: 'authentic', cn: '道地的；真正的' },
+            { en: 'exchange', cn: '交換' },
+            { en: 'program', cn: '計畫；節目' },
+            { en: 'highlight', cn: '最精彩的部分；強調' },
+            { en: 'cheerful', cn: '興高采烈的' },
+            { en: 'occupy', cn: '占據' },
+            { en: 'occupation', cn: '職業' },
+            { en: 'vehicle', cn: '車輛' },
+            { en: 'pedestrian', cn: '行人' },
+            // L4
+            { en: 'assistant', cn: '助手' },
+            { en: 'assist', cn: '協助' },
+            { en: 'curious', cn: '好奇的' },
+            { en: 'explain', cn: '解釋' },
+            { en: 'originate', cn: '起源於' },
+            { en: 'event', cn: '盛事；活動' },
+            { en: 'neighborhood', cn: '鄰近地區' },
+            { en: 'arrange', cn: '安排' },
+            { en: 'aspect', cn: '方面' },
+            { en: 'spirit', cn: '精神' },
+            { en: 'gather', cn: '聚集' },
+            { en: 'remain', cn: '繼續存在；保持' },
+            // Phrases
+            { en: 'take part in', cn: '參加' },
+            { en: 'open one\'s eyes', cn: '令人大開眼界' },
+            { en: 'take place', cn: '舉行；發生' },
+            { en: 'put up', cn: '搭建' },
+            { en: 'come about', cn: '產生' },
+            { en: 'hand out', cn: '分發' }
+        ];
+
+        let currentWords = [...vocabulary];
+
+        // --- 通用功能 ---
+        const menuButtons = document.querySelectorAll('.menu-btn');
+        const gameContainers = document.querySelectorAll('.game-container');
+        const gameArena = document.getElementById('game-arena');
+
+        // 隨機排序陣列 (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 顯示特定遊戲
+        function showGame(gameId) {
+            gameContainers.forEach(container => {
+                container.classList.remove('active');
+            });
+            const gameToShow = document.getElementById(gameId);
+            if (gameToShow) {
+                gameToShow.classList.add('active');
+                // 根據遊戲ID初始化
+                switch (gameId) {
+                    case 'flashcards':
+                        initFlashcards();
+                        break;
+                    case 'spelling':
+                        initSpelling();
+                        break;
+                    case 'matching':
+                        initMatching();
+                        break;
+                    case 'memory':
+                        initMemory();
+                        break;
+                }
+            }
+        }
+
+        // 主選單按鈕事件
+        menuButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetGame = button.dataset.target;
+                showGame(targetGame);
+            });
+        });
+
+        // --- 2. 閃示卡 (Flashcards) ---
+        const flashcard = document.getElementById('flashcard');
+        const fcFront = document.getElementById('flashcard-front-text');
+        const fcBack = document.getElementById('flashcard-back-text');
+        const fcPrev = document.getElementById('flashcard-prev');
+        const fcNext = document.getElementById('flashcard-next');
+        const fcFlip = document.getElementById('flashcard-flip');
+        const fcShuffle = document.getElementById('flashcard-shuffle');
+        const fcProgress = document.getElementById('flashcard-progress');
+        
+        let fcCurrentIndex = 0;
+        let fcWords = [...vocabulary];
+
+        function initFlashcards() {
+            fcCurrentIndex = 0;
+            updateFlashcard();
+        }
+
+        function updateFlashcard() {
+            if (flashcard.classList.contains('is-flipped')) {
+                flashcard.classList.remove('is-flipped');
+            }
+            const word = fcWords[fcCurrentIndex];
+            fcFront.textContent = word.en;
+            fcBack.textContent = word.cn;
+            fcProgress.textContent = `第 ${fcCurrentIndex + 1} / ${fcWords.length} 個`;
+        }
+
+        fcFlip.addEventListener('click', () => {
+            flashcard.classList.toggle('is-flipped');
+        });
+
+        fcNext.addEventListener('click', () => {
+            fcCurrentIndex = (fcCurrentIndex + 1) % fcWords.length;
+            updateFlashcard();
+        });
+
+        fcPrev.addEventListener('click', () => {
+            fcCurrentIndex = (fcCurrentIndex - 1 + fcWords.length) % fcWords.length;
+            updateFlashcard();
+        });
+
+        fcShuffle.addEventListener('click', () => {
+            fcWords = shuffleArray([...vocabulary]);
+            initFlashcards();
+        });
+
+        // --- 3. 拼字練習 (Spelling) ---
+        const spPrompt = document.getElementById('spelling-prompt');
+        const spInput = document.getElementById('spelling-input');
+        const spCheck = document.getElementById('spelling-check');
+        const spFeedback = document.getElementById('spelling-feedback');
+        const spNext = document.getElementById('spelling-next');
+
+        let spCurrentIndex = 0;
+        let spWords = shuffleArray([...vocabulary]);
+
+        function initSpelling() {
+            spCurrentIndex = 0;
+            spWords = shuffleArray([...vocabulary]);
+            loadSpellingWord();
+        }
+
+        function loadSpellingWord() {
+            const word = spWords[spCurrentIndex];
+            spPrompt.textContent = word.cn;
+            spInput.value = '';
+            spFeedback.textContent = '';
+            spInput.disabled = false;
+            spCheck.disabled = false;
+            spInput.focus();
+        }
+
+        function checkSpelling() {
+            const answer = spWords[spCurrentIndex].en;
+            const input = spInput.value.trim();
+
+            if (input.toLowerCase() === answer.toLowerCase()) {
+                spFeedback.textContent = '正確！ 🎉';
+                spFeedback.className = 'text-center h-12 text-green-600 font-semibold';
+                spInput.disabled = true;
+                spCheck.disabled = true;
+            } else {
+                spFeedback.textContent = `不正確，答案是：${answer}`;
+                spFeedback.className = 'text-center h-12 text-red-500 font-semibold';
+            }
+        }
+
+        spCheck.addEventListener('click', checkSpelling);
+        spInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                checkSpelling();
+            }
+        });
+        
+        spNext.addEventListener('click', () => {
+            spCurrentIndex = (spCurrentIndex + 1) % spWords.length;
+            loadSpellingWord();
+        });
+
+        // --- 4. 配對練習 (Matching) ---
+        const matchEnContainer = document.getElementById('matching-en');
+        const matchCnContainer = document.getElementById('matching-cn');
+        const matchNew = document.getElementById('matching-new');
+        const matchFeedback = document.getElementById('matching-feedback');
+
+        let matchWords = [];
+        let selectedEn = null;
+        let selectedCn = null;
+        let matchedCount = 0;
+        const MATCH_PAIRS = 6;
+
+        function initMatching() {
+            matchedCount = 0;
+            selectedEn = null;
+            selectedCn = null;
+            matchFeedback.textContent = '';
+            matchEnContainer.innerHTML = '';
+            matchCnContainer.innerHTML = '';
+            
+            // 隨機選取 N 對
+            matchWords = shuffleArray([...vocabulary]).slice(0, MATCH_PAIRS);
+            let enWords = shuffleArray(matchWords.map(w => ({ en: w.en, id: w.en })));
+            let cnWords = shuffleArray(matchWords.map(w => ({ cn: w.cn, id: w.en })));
+
+            // 渲染
+            enWords.forEach(word => {
+                matchEnContainer.innerHTML += `<div class="matching-item p-3 bg-gray-100 rounded-lg shadow-sm border border-gray-200" data-id="${word.id}">${word.en}</div>`;
+            });
+            cnWords.forEach(word => {
+                matchCnContainer.innerHTML += `<div class="matching-item p-3 bg-gray-100 rounded-lg shadow-sm border border-gray-200" data-id="${word.id}">${word.cn}</div>`;
+            });
+            
+            addMatchingListeners();
+        }
+        
+        function addMatchingListeners() {
+            document.querySelectorAll('#matching-en .matching-item').forEach(item => {
+                item.addEventListener('click', () => handleMatchSelect(item, 'en'));
+            });
+            document.querySelectorAll('#matching-cn .matching-item').forEach(item => {
+                item.addEventListener('click', () => handleMatchSelect(item, 'cn'));
+            });
+        }
+        
+        function handleMatchSelect(item, type) {
+            if (item.classList.contains('matched')) return;
+
+            if (type === 'en') {
+                if (selectedEn) selectedEn.classList.remove('selected');
+                selectedEn = item;
+                selectedEn.classList.add('selected');
+            } else {
+                if (selectedCn) selectedCn.classList.remove('selected');
+                selectedCn = item;
+                selectedCn.classList.add('selected');
+            }
+
+            if (selectedEn && selectedCn) {
+                checkMatch();
+            }
+        }
+        
+        function checkMatch() {
+            if (selectedEn.dataset.id === selectedCn.dataset.id) {
+                // 配對成功
+                selectedEn.classList.add('matched');
+                selectedCn.classList.add('matched');
+                selectedEn.classList.remove('selected');
+                selectedCn.classList.remove('selected');
+                matchedCount++;
+                matchFeedback.textContent = '配對成功！';
+                matchFeedback.className = 'text-center h-8 mb-4 font-semibold text-green-600';
+            } else {
+                // 配對失敗
+                selectedEn.classList.add('incorrect');
+                selectedCn.classList.add('incorrect');
+                matchFeedback.textContent = '配對錯誤，請重試。';
+                matchFeedback.className = 'text-center h-8 mb-4 font-semibold text-red-500';
+
+                setTimeout(() => {
+                    selectedEn.classList.remove('selected', 'incorrect');
+                    selectedCn.classList.remove('selected', 'incorrect');
+                    if (matchFeedback.textContent === '配對錯誤，請重試。') {
+                        matchFeedback.textContent = '';
+                    }
+                }, 500);
+            }
+            
+            selectedEn = null;
+            selectedCn = null;
+
+            if (matchedCount === MATCH_PAIRS) {
+                matchFeedback.textContent = '恭喜！全部配對完成！';
+                matchFeedback.className = 'text-center h-8 mb-4 font-semibold text-green-600';
+            }
+        }
+
+        matchNew.addEventListener('click', initMatching);
+
+        // --- 5. 記憶遊戲 (Memory) ---
+        const memGrid = document.getElementById('memory-grid');
+        const memNew = document.getElementById('memory-new');
+        const memMoves = document.getElementById('memory-moves');
+        const memFeedback = document.getElementById('memory-feedback');
+        
+        let memCards = [];
+        let memFlippedCards = [];
+        let memMatchedPairs = 0;
+        let memMoveCount = 0;
+        let memLockBoard = false;
+        const MEMORY_PAIRS = 6; // 6對 = 12張卡
+
+        function initMemory() {
+            memGrid.innerHTML = '';
+            memFeedback.textContent = '';
+            memFlippedCards = [];
+            memMatchedPairs = 0;
+            memMoveCount = 0;
+            memLockBoard = false;
+            updateMoves();
+
+            // 準備卡片資料
+            let words = shuffleArray([...vocabulary]).slice(0, MEMORY_PAIRS);
+            memCards = [];
+            words.forEach(word => {
+                memCards.push({ type: 'en', content: word.en, id: word.en });
+                memCards.push({ type: 'cn', content: word.cn, id: word.en });
+            });
+            memCards = shuffleArray(memCards);
+            
+            // 渲染卡片
+            memCards.forEach(card => {
+                const cardElement = `
+                    <div class="memory-card" data-id="${card.id}">
+                        <div class="memory-card-inner">
+                            <div class="memory-card-face memory-card-front">?</div>
+                            <div class="memory-card-face memory-card-back">${card.content}</div>
+                        </div>
+                    </div>
+                `;
+                memGrid.innerHTML += cardElement;
+            });
+            
+            // 綁定事件
+            document.querySelectorAll('.memory-card').forEach(card => {
+                card.addEventListener('click', () => flipMemoryCard(card));
+            });
+        }
+        
+        function updateMoves() {
+            memMoves.textContent = `步數: ${memMoveCount}`;
+        }
+        
+        function flipMemoryCard(card) {
+            if (memLockBoard || card.classList.contains('is-flipped') || card.classList.contains('is-matched')) {
+                return;
+            }
+            
+            card.classList.add('is-flipped');
+            memFlippedCards.push(card);
+
+            if (memFlippedCards.length === 2) {
+                memLockBoard = true;
+                memMoveCount++;
+                updateMoves();
+                checkForMemoryMatch();
+            }
+        }
+
+        function checkForMemoryMatch() {
+            const [card1, card2] = memFlippedCards;
+            
+            if (card1.dataset.id === card2.dataset.id) {
+                // 匹配成功
+                card1.classList.add('is-matched');
+                card2.classList.add('is-matched');
+                memMatchedPairs++;
+                memFlippedCards = [];
+                memLockBoard = false;
+                
+                if (memMatchedPairs === MEMORY_PAIRS) {
+                    memFeedback.textContent = '恭喜！全部找到了！';
+                }
+            } else {
+                // 匹配失敗
+                setTimeout(() => {
+                    card1.classList.remove('is-flipped');
+                    card2.classList.remove('is-flipped');
+                    memFlippedCards = [];
+                    memLockBoard = false;
+                }, 1000);
+            }
+        }
+
+        memNew.addEventListener('click', initMemory);
+
+
+        // --- 初始啟動 ---
+        // 預設顯示第一個遊戲
+        showGame('flashcards');
+
+    </script>
+</body>
+</html>
+
+
