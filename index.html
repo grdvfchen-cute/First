@@ -1,0 +1,246 @@
+
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高二英文 L3 學習中心</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 Inter 字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 使用 Inter 字體作為預設 */
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除行動裝置點擊高光 */
+            background-color: #f7f7f7;
+            color: #333;
+        }
+
+        /* 標籤按鈕基礎樣式 */
+        .tab-btn {
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #1a73e8;
+            border-bottom: 3px solid #1a73e8;
+        }
+
+        /* 卡片陰影效果 */
+        .card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 響應式調整 */
+        @media (max-width: 640px) {
+            .container {
+                padding: 0 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mx-auto p-4 max-w-4xl">
+        <header class="text-center py-6 bg-white shadow-md rounded-lg mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">高二英文 L3 學習中心</h1>
+            <p class="text-gray-500 mt-2">Vocabulary, Phrases, and Grammar Review</p>
+        </header>
+
+        <!-- 標籤導覽列 -->
+        <nav class="flex justify-center bg-white p-2 rounded-t-lg shadow-sm sticky top-0 z-10">
+            <div id="tab-nav" class="flex space-x-4 overflow-x-auto">
+                <button class="tab-btn active" data-tab="vocab">單字 (Vocabulary)</button>
+                <button class="tab-btn" data-tab="phrases">片語 (Phrases)</button>
+                <button class="tab-btn" data-tab="grammar">文法 (Grammar)</button>
+                <button class="tab-btn" data-tab="quiz">小測驗 (Quiz)</button>
+            </div>
+        </nav>
+
+        <!-- 內容區塊 -->
+        <main class="mt-4">
+            <!-- 單字內容 -->
+            <section id="vocab-content" class="tab-content card bg-white p-6 rounded-b-lg">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2 text-blue-600">單字列表</h2>
+                <ul class="space-y-4">
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">1. authentic (adj.)</strong>：道地的、真正的
+                        <p class="text-gray-600 mt-1">SYN: real, genuine</p>
+                        <p class="text-sm text-gray-500 italic">Example: An Indian friend gave me this **authentic** curry recipe and I like it very much.</p>
+                    </li>
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">2. exchange (n./v.)</strong>：交換
+                        <p class="text-gray-600 mt-1">vt. SYN: switch</p>
+                        <p class="text-sm text-gray-500 italic">Example: The soccer players **exchanged** their T-shirts after the game.</p>
+                    </li>
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">3. program (n.)</strong>：計畫、程式
+                        <p class="text-sm text-gray-500 italic">Example: Stanley joined a summer **program** which offered free English lessons.</p>
+                    </li>
+                    <!-- 更多單字... -->
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">15. arrange (vt.)</strong>：安排
+                        <p class="text-sm text-gray-500 italic">Example: Joyce **arranged** a party for her daughter's birthday.</p>
+                    </li>
+                </ul>
+            </section>
+
+            <!-- 片語內容 -->
+            <section id="phrases-content" class="tab-content card bg-white p-6 rounded-b-lg hidden">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2 text-green-600">片語列表</h2>
+                <ul class="space-y-4">
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">1. take part in</strong>：參加
+                        <p class="text-sm text-gray-500 italic">Example: Susan **took part in** the talent show.</p>
+                    </li>
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">2. open one's eyes</strong>：令人大開眼界
+                        <p class="text-sm text-gray-500 italic">Example: Houdini's performance had **opened the boy's eyes**.</p>
+                    </li>
+                    <li class="p-3 bg-gray-50 rounded-lg">
+                        <strong class="text-lg text-gray-800">3. take place</strong>：舉行、發生
+                        <p class="text-sm text-gray-500 italic">Example: Fuji Rock Festival **takes place** every year.</p>
+                    </li>
+                    <!-- 更多片語... -->
+                </ul>
+            </section>
+
+            <!-- 文法內容 -->
+            <section id="grammar-content" class="tab-content card bg-white p-6 rounded-b-lg hidden">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2 text-red-600">文法重點：形容詞子句 (Relative Clauses)</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p>形容詞子句用於修飾名詞，通常由關係代名詞 (who, whom, which, that) 或關係副詞 (when, where, why) 引導。</p>
+                    <div class="p-3 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+                        <strong class="font-semibold">重點：</strong> 當關係代名詞在子句中作受詞時，可以省略 (如：`that` 或 `which`)。
+                    </div>
+                    <p class="text-sm italic">Example: This is the book (which/that) I bought yesterday.</p>
+                </div>
+            </section>
+
+            <!-- 測驗內容 -->
+            <section id="quiz-content" class="tab-content card bg-white p-6 rounded-b-lg hidden">
+                <h2 class="text-2xl font-semibold mb-4 border-b pb-2 text-purple-600">單字選擇題</h2>
+                <div id="quiz-area" class="space-y-4">
+                    <!-- 測驗題目將由 JavaScript 動態生成 -->
+                    <p class="text-gray-500">點擊開始測驗按鈕。</p>
+                </div>
+                <button id="start-quiz-btn" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    開始測驗
+                </button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const quizArea = document.getElementById('quiz-area');
+
+            // --- Tab 切換邏輯 ---
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // 移除所有 active 狀態
+                    tabs.forEach(t => t.classList.remove('active'));
+                    contents.forEach(c => c.classList.add('hidden'));
+
+                    // 設定點擊的 tab 為 active
+                    tab.classList.add('active');
+
+                    // 顯示對應的內容
+                    const targetId = tab.getAttribute('data-tab') + '-content';
+                    document.getElementById(targetId).classList.remove('hidden');
+                });
+            });
+
+            // --- 測驗邏輯 ---
+            const quizData = [
+                {
+                    question: "An Indian friend gave me this ______ curry recipe.",
+                    options: ["exchange", "aspect", "authentic", "spirit"],
+                    answer: "authentic"
+                },
+                {
+                    question: "The team still kept its fighting ______.",
+                    options: ["event", "spirit", "program", "aspect"],
+                    answer: "spirit"
+                },
+                {
+                    question: "Houdini's performance had ______ the boy's eyes.",
+                    options: ["take part in", "take place", "come about", "open one's eyes"],
+                    answer: "open one's eyes"
+                }
+            ];
+
+            function startQuiz() {
+                quizArea.innerHTML = ''; // 清空測驗區
+                startQuizBtn.textContent = '重置測驗';
+                startQuizBtn.removeEventListener('click', startQuiz);
+                startQuizBtn.addEventListener('click', startQuiz); // 重新綁定重置功能
+
+                quizData.forEach((item, index) => {
+                    const questionElement = document.createElement('div');
+                    questionElement.className = 'p-4 border-b border-gray-200';
+                    questionElement.innerHTML = `<p class="font-semibold mb-3 text-gray-800">${index + 1}. ${item.question}</p>`;
+
+                    const optionsDiv = document.createElement('div');
+                    optionsDiv.className = 'space-y-2';
+
+                    item.options.sort(() => Math.random() - 0.5); // 隨機排列選項
+
+                    item.options.forEach(option => {
+                        const label = document.createElement('label');
+                        label.className = 'flex items-center space-x-2 cursor-pointer text-gray-700 hover:text-blue-500';
+
+                        const input = document.createElement('input');
+                        input.type = 'radio';
+                        input.name = `q${index}`;
+                        input.value = option;
+                        input.className = 'form-radio text-blue-500 h-4 w-4';
+
+                        label.appendChild(input);
+                        label.appendChild(document.createTextNode(option));
+
+                        optionsDiv.appendChild(label);
+
+                        // 答案檢查邏輯
+                        input.addEventListener('change', () => {
+                            if (input.checked) {
+                                // 移除所有選項的顏色
+                                optionsDiv.querySelectorAll('label').forEach(l => {
+                                    l.classList.remove('text-green-600', 'text-red-600');
+                                    l.style.pointerEvents = 'none'; // 鎖定選項
+                                });
+
+                                // 標記正確和錯誤答案
+                                if (option === item.answer) {
+                                    label.classList.add('text-green-600');
+                                } else {
+                                    label.classList.add('text-red-600');
+                                    // 找出正確答案並標記
+                                    optionsDiv.querySelectorAll('input').forEach(i => {
+                                        if (i.value === item.answer) {
+                                            i.parentElement.classList.add('text-green-600');
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    });
+
+                    questionElement.appendChild(optionsDiv);
+                    quizArea.appendChild(questionElement);
+                });
+            }
+
+            // 初始綁定
+            startQuizBtn.addEventListener('click', startQuiz);
+        });
+    </script>
+</body>
+</html>
